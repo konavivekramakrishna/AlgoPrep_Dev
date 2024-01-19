@@ -68,7 +68,7 @@ function getCompanyAndTopicTags(problemStatement) {
 const obs = new MutationObserver(function (_mutations, _observer) {
   const submitButton = document.querySelector(".problems_submit_button__6QoNQ");
 
-  console.log("DOMContentLoaded event triggered");
+ // console.log("DOMContentLoaded event triggered");
 
   if (submitButton) {
     submitButton.addEventListener("click", () => {
@@ -163,7 +163,7 @@ const obs = new MutationObserver(function (_mutations, _observer) {
       }, 1000);
     });
   } else {
-    console.log("Submit button not found");
+   // console.log("Submit button not found");
   }
 });
 
