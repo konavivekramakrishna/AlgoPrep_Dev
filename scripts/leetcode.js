@@ -24,11 +24,6 @@ const languages = {
   C: ".c",
 };
 
-// Here, a Mutationobs1erver is created, which is a feature in the Web API that provides a way to react to changes in the DOM (Document Object Model). It takes a callback function as an argument, which will be invoked whenever a change in the DOM is detected.
-
-//This method is used to find the first element in the document that matches the specified CSS selector. ooking for an element that has an attribute named data-e2e-locator with a value of "console-submit-button".
-
-// data-e2e-locator is a custom data attribute. Custom data attributes are attributes in HTML that start with the prefix "data-" and can be used to store private data for the page or application.
 const obs1 = new MutationObserver(function (_mutations, observer) {
   const submitButton = document.querySelector(
     '[data-e2e-locator="console-submit-button"]'
@@ -60,7 +55,7 @@ async function func() {
         }
       }
     } catch (err) {
-      console.error("Error:", err);
+      console.log("Error:", err);
       clearInterval(intervalId);
     }
   }, 1000);
@@ -110,7 +105,7 @@ async function getFromLeetCodeApi() {
     const data = await fetch("https://leetcode.com/graphql/", options)
       .then((res) => {
         if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
+          console.log(`HTTP error! Status: ${res.status}`);
         }
         return res.json();
       })
@@ -154,7 +149,7 @@ async function getFromLeetCodeApi() {
 
     return temp;
   } catch (error) {
-    console.error("Error fetching data from LeetCode API:", error);
+    console.log("Error fetching data from LeetCode API:", error);
   }
 }
 
@@ -237,16 +232,10 @@ async function getFolderInfo(url, token) {
   return await response.json();
 }
 
-// leetcode.js:84 <span data-e2e-locator=​"submission-result">​Accepted​</span>​
-// leetcode.js:127 Retrieved email value: notimportantupdatesonly@gmail.com
-// leetcode.js:132 Retrieved email value: codewithunknown
-// leetcode.js:145 new data from LeetCode API and formatted: {lang: '.py', tagArray: Array(3), solutionCode: 'class Solution:\n    def containsDuplicate(self, nu…\n            hashset.add(n)\n        return False\n', question: {…}, submissionId: '1150284898', …}
-// leetcode.js:52 sol obj {lang: '.py', tagArray: Array(3), solutionCode: 'class Solution:\n    def containsDuplicate(self, nu…\n            hashset.add(n)\n        return False\n', question: {…}, submissionId: '1150284898', …}email: "notimportantupdatesonly@gmail.com"lang: ".py"question: content: "<p>Given an integer array <code>nums</code>, return <code>true</code> if any value appears <strong>at least twice</strong> in the array, and return <code>false</code> if every element is distinct.</p>\n\n<p>&nbsp;</p>\n<p><strong class=\"example\">Example 1:</strong></p>\n<pre><strong>Input:</strong> nums = [1,2,3,1]\n<strong>Output:</strong> true\n</pre><p><strong class=\"example\">Example 2:</strong></p>\n<pre><strong>Input:</strong> nums = [1,2,3,4]\n<strong>Output:</strong> false\n</pre><p><strong class=\"example\">Example 3:</strong></p>\n<pre><strong>Input:</strong> nums = [1,1,1,3,3,4,3,2,4,2]\n<strong>Output:</strong> true\n</pre>\n<p>&nbsp;</p>\n<p><strong>Constraints:</strong></p>\n\n<ul>\n\t<li><code>1 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>\n\t<li><code>-10<sup>9</sup> &lt;= nums[i] &lt;= 10<sup>9</sup></code></li>\n</ul>\n"difficulty: "Easy"questionId: "217"title: "Contains Duplicate"titleSlug: "contains-duplicate"[[Prototype]]: ObjectsolutionCode: "class Solution:\n    def containsDuplicate(self, nums: List[int]) -> bool:\n        hashset = set()\n\n        for n in nums:\n            if n in hashset:\n                return True\n            hashset.add(n)\n        return False\n"submissionId: "1150284898"tagArray: Array(3)0: "array"1: "hash-table"2: "sorting"length: 3[[Prototype]]: Array(0)username: "codewithunknown"[[Prototype]]: Object
-
 async function createFile(createFileObj, content, fileName, type) {
   const url = `https://api.github.com/repos/${createFileObj.username}/AlgoPrep/contents/${createFileObj.question.titleSlug}/${fileName}${type}`;
   const encodedContent = btoa(content);
-  
+
   const body = {
     message: `solved ${createFileObj.question.title}`,
     content: encodedContent,
@@ -269,7 +258,7 @@ async function createFile(createFileObj, content, fileName, type) {
 
     if (!response.ok) {
       console.log(response);
-      throw new Error(
+      console.log(
         `Failed to create: ${response.status} ${response.statusText}`
       );
     } else {
@@ -277,6 +266,6 @@ async function createFile(createFileObj, content, fileName, type) {
       console.log(`File created. SHA: ${data.content.sha}`);
     }
   } catch (error) {
-    console.error(error);
+    console.log(error);
   }
 }

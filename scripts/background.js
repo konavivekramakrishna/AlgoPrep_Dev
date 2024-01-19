@@ -34,7 +34,7 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
         chrome.storage.local.set({ isAuthAlgoPrep: true });
       })
       .catch((error) => {
-        console.error("Error exchanging code for token:", error);
+        console.log("Error exchanging code for token:", error);
       });
   }
 });
@@ -94,7 +94,7 @@ async function setAuthenticatedUserData(authToken) {
       // return { username: userData.login, email: userData.email };
     }
   } catch (error) {
-    console.error("Error fetching user data:", error);
+    console.log("Error fetching user data:", error);
     // Return an appropriate value when there's an error
     return null;
   }
