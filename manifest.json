@@ -1,0 +1,55 @@
+{
+  "name": "AlgoPrep",
+  "version": "1.0.0",
+  "description": "Automatically sync your Coding platforms solutions to GitHub",
+  "manifest_version": 3,
+  "author": "Team Recursion",
+  "action": {
+    "default_popup": "popUp.html",
+    "default_title": "AlgoPrep",
+    "default_icon": "images/AlgoPrepMainLogo.png"
+  },
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+  "content_scripts": [
+    {
+      "js": ["scripts/gfg.js", "scripts/auth.js", "scripts/leetcode.js"],
+      "matches": [
+        "https://www.geeksforgeeks.org/*",
+        "https://github.com/*",
+        "https://leetcode.com/*"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "https://github.com/*",
+    "https://www.geeksforgeeks.org/*",
+    "https://api.github.com/*",
+    "https://practice.geeksforgeeks.org/*",
+    "https://geeksforgeeks.org/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["scripts/extractCode.js", "scripts/nodeDeletion.js"],
+      "matches": [
+        "https://geeksforgeeks.org/*",
+        "https://www.geeksforgeeks.org/*"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "images/AlgoPrepMainLogo.png",
+    "48": "images/AlgoPrepMainLogo.png",
+    "128": "images/AlgoPrepMainLogo.png"
+  },
+  "permissions": [
+    "scripting",
+    "storage",
+    "unlimitedStorage",
+    "tabs",
+    "activeTab",
+    "tabs"
+  ]
+}
