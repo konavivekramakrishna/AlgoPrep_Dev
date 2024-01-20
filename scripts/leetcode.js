@@ -220,16 +220,24 @@ async function createOrUpdateSolutionFile(solutionObj) {
       solutionObj.lang
     );
 
-    let tempFlag = await getFolderInfo(
-      `https://api.github.com/repos/${solutionObj.username}/AlgoPrep/contents/data.json`
+    let dataObjJson = await getDataJSON(
+      solutionObj.username,
+      solutionObj.token
     );
 
-    if (tempFlag != false) {
-      // // update
-    } else {
-      // create
+    console.log("dataObjJSON", dataObjJson);
 
-      await createFile();
+    if (dataObjJson == false) {
+      console.log("trying to create data.json file if not exists");
+
+      await createDataJSON(solutionObj);
+    } else {
+      let { sha, content } = dataObjJson;
+      console.log("sha", sha);
+      console.log("conetent", content);
+
+      console.log("should update data json file");
+      await updateDataJSON(solutionObj, sha, content);
     }
   }
 }
@@ -251,12 +259,6 @@ async function getFolderInfo(url, token) {
   const data = await response.json();
   return data.sha; // Return the 'sha' property from the JSON response
 }
-
-// leetcode.js:84 <span data-e2e-locator=​"submission-result">​Accepted​</span>​
-// leetcode.js:127 Retrieved email value: notimportantupdatesonly@gmail.com
-// leetcode.js:132 Retrieved email value: codewithunknown
-// leetcode.js:145 new data from LeetCode API and formatted: {lang: '.py', tagArray: Array(3), solutionCode: 'class Solution:\n    def containsDuplicate(self, nu…\n            hashset.add(n)\n        return False\n', question: {…}, submissionId: '1150284898', …}
-// leetcode.js:52 sol obj {lang: '.py', tagArray: Array(3), solutionCode: 'class Solution:\n    def containsDuplicate(self, nu…\n            hashset.add(n)\n        return False\n', question: {…}, submissionId: '1150284898', …}email: "notimportantupdatesonly@gmail.com"lang: ".py"question: content: "<p>Given an integer array <code>nums</code>, return <code>true</code> if any value appears <strong>at least twice</strong> in the array, and return <code>false</code> if every element is distinct.</p>\n\n<p>&nbsp;</p>\n<p><strong class=\"example\">Example 1:</strong></p>\n<pre><strong>Input:</strong> nums = [1,2,3,1]\n<strong>Output:</strong> true\n</pre><p><strong class=\"example\">Example 2:</strong></p>\n<pre><strong>Input:</strong> nums = [1,2,3,4]\n<strong>Output:</strong> false\n</pre><p><strong class=\"example\">Example 3:</strong></p>\n<pre><strong>Input:</strong> nums = [1,1,1,3,3,4,3,2,4,2]\n<strong>Output:</strong> true\n</pre>\n<p>&nbsp;</p>\n<p><strong>Constraints:</strong></p>\n\n<ul>\n\t<li><code>1 &lt;= nums.length &lt;= 10<sup>5</sup></code></li>\n\t<li><code>-10<sup>9</sup> &lt;= nums[i] &lt;= 10<sup>9</sup></code></li>\n</ul>\n"difficulty: "Easy"questionId: "217"title: "Contains Duplicate"titleSlug: "contains-duplicate"[[Prototype]]: ObjectsolutionCode: "class Solution:\n    def containsDuplicate(self, nums: List[int]) -> bool:\n        hashset = set()\n\n        for n in nums:\n            if n in hashset:\n                return True\n            hashset.add(n)\n        return False\n"submissionId: "1150284898"tagArray: Array(3)0: "array"1: "hash-table"2: "sorting"length: 3[[Prototype]]: Array(0)username: "codewithunknown"[[Prototype]]: Object
 
 async function createFile(createFileObj, content, fileName, type) {
   const url = `https://api.github.com/repos/${createFileObj.username}/AlgoPrep/contents/${createFileObj.question.titleSlug}/${fileName}${type}`;
@@ -296,3 +298,160 @@ async function createFile(createFileObj, content, fileName, type) {
   }
 }
 
+// date
+// questiontitle
+// platform
+// difficulty
+// tags
+// questiondescription
+// code
+// questionlink
+// githublink
+
+async function createDataJSON(createFileObj) {
+  const url = `https://api.github.com/repos/${createFileObj.username}/AlgoPrep/contents/data.json`;
+
+  let tempQuestionName = createFileObj.question.titleSlug;
+
+  let content = {
+    [tempQuestionName]: {
+      date: new Date().toDateString(),
+      questiontitle: createFileObj.question.titleSlug,
+      code: createFileObj.solutionCode,
+      question: question.content,
+      platform: "leetcode",
+      difficulty: createFileObj.question.difficulty,
+      tags: createFileObj.tagArray,
+      qlink: `https://leetcode.com/problems/${createFileObj.question.titleSlug}`,
+      githublink: `https://github.com${createFileObj.username}/AlgoPrep/tree/main/${createFileObj.question.titleSlug}`,
+    },
+  };
+
+  const encodedContent = btoa(JSON.stringify(content));
+
+  const body = {
+    message: `created json file`,
+    content: encodedContent,
+    branch: "main",
+    committer: {
+      name: createFileObj.username ?? "codewithunknown",
+      email: createFileObj.email ?? "notimportantupdatesonly@gmail.com",
+    },
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer  ${createFileObj.token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      console.log(response);
+      throw new Error(
+        `Failed to create: ${response.status} ${response.statusText}`
+      );
+    } else {
+      const data = await response.json();
+      console.log(`File created. SHA: ${data.content.sha}`);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function getDataJSON(username, token) {
+  const url = `https://api.github.com/repos/${username}/AlgoPrep/contents/data.json`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer  ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        // File not found
+        return false;
+      } else {
+        console.log(response);
+        throw new Error(
+          `Failed to fetch: ${response.status} ${response.statusText}`
+        );
+      }
+    } else {
+      const data = await response.json();
+
+      // Decode content from base64 and parse JSON
+      const content = JSON.parse(atob(data.content));
+
+      return {
+        sha: data.sha,
+        content: content,
+      };
+    }
+  } catch (error) {
+    console.error(error);
+    return null; // Handle the error as needed in your application
+  }
+}
+
+async function updateDataJSON(createFileObj, sha, alreadyContent) {
+  const url = `https://api.github.com/repos/${createFileObj.username}/AlgoPrep/contents/data.json`;
+
+  let tempQuestionName = createFileObj.question.titleSlug;
+
+  alreadyContent[tempQuestionName] = {
+    date: new Date().toDateString(),
+    questiontitle: createFileObj.question.titleSlug,
+    code: createFileObj.solutionCode,
+    question: createFileObj.question.content,
+    platform: "leetcode",
+    difficulty: createFileObj.question.difficulty,
+    tags: createFileObj.tagArray,
+    qlink: `https://leetcode.com/problems/${createFileObj.question.titleSlug}`,
+    githublink: `https://github.com/${createFileObj.username}/AlgoPrep/tree/main/${createFileObj.question.titleSlug}`,
+  };
+
+  const encodedContent = btoa(JSON.stringify(alreadyContent));
+
+  const body = {
+    message: `updated json file`,
+    content: encodedContent,
+    branch: "main",
+    committer: {
+      name: createFileObj.username ?? "codewithunknown",
+      email: createFileObj.email ?? "notimportantupdatesonly@gmail.com",
+    },
+    sha: sha, // Pass the sha correctly for updating
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${createFileObj.token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      console.log(response);
+      throw new Error(
+        `Failed to update: ${response.status} ${response.statusText}`
+      );
+    } else {
+      const data = await response.json();
+      console.log(`File updated. New SHA: ${data.content.sha}`);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
