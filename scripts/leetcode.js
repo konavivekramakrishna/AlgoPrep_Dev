@@ -318,7 +318,7 @@ async function createDataJSON(createFileObj) {
       date: new Date().toDateString(),
       questiontitle: createFileObj.question.titleSlug,
       code: createFileObj.solutionCode,
-      question: question.content,
+      question: createFileObj.question.content,
       platform: "leetcode",
       difficulty: createFileObj.question.difficulty,
       tags: createFileObj.tagArray,

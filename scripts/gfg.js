@@ -243,6 +243,27 @@ async function createOrUpdateSolutionFile(solutionObj) {
       solutionObj.question.titleSlug,
       solutionObj.lang
     );
+
+    let dataObjJson = await getDataJSON(
+      solutionObj.username,
+      solutionObj.token
+    );
+
+    console.log("dataObjJSON", dataObjJson);
+
+    if (dataObjJson == false) {
+      console.log("trying to create data.json file if not exists");
+
+      await createDataJSON(solutionObj);
+    } else {
+      let { sha, content } = dataObjJson;
+      console.log("sha", sha);
+      console.log("conetent", content);
+
+      console.log("should update data json file");
+      await updateDataJSON(solutionObj, sha, content);
+    }
+
   }
 }
 
@@ -299,6 +320,154 @@ async function createFile(createFileObj, content, fileName, type) {
     } else {
       const data = await response.json();
       console.log(`File created. SHA: ${data.content.sha}`);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function createDataJSON(createFileObj) {
+  const url = `https://api.github.com/repos/${createFileObj.username}/AlgoPrep/contents/data.json`;
+
+  let tempQuestionName = createFileObj.question.titleSlug;
+
+  let content = {
+    [tempQuestionName]: {
+      date: new Date().toDateString(),
+      questiontitle: createFileObj.question.titleSlug,
+      code: createFileObj.solutionCode,
+      question: createFileObj.question.content,
+      platform: "leetcode",
+      difficulty: createFileObj.question.difficulty,
+      tags: createFileObj.tagArray,
+      qlink: `https://leetcode.com/problems/${createFileObj.question.titleSlug}`,
+      githublink: `https://github.com${createFileObj.username}/AlgoPrep/tree/main/${createFileObj.question.titleSlug}`,
+    },
+  };
+
+  const encodedContent = btoa(JSON.stringify(content));
+
+  const body = {
+    message: `created json file`,
+    content: encodedContent,
+    branch: "main",
+    committer: {
+      name: createFileObj.username ?? "codewithunknown",
+      email: createFileObj.email ?? "notimportantupdatesonly@gmail.com",
+    },
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer  ${createFileObj.token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      console.log(response);
+      throw new Error(
+        `Failed to create: ${response.status} ${response.statusText}`
+      );
+    } else {
+      const data = await response.json();
+      console.log(`File created. SHA: ${data.content.sha}`);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function getDataJSON(username, token) {
+  const url = `https://api.github.com/repos/${username}/AlgoPrep/contents/data.json`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer  ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        // File not found
+        return false;
+      } else {
+        console.log(response);
+        throw new Error(
+          `Failed to fetch: ${response.status} ${response.statusText}`
+        );
+      }
+    } else {
+      const data = await response.json();
+
+      // Decode content from base64 and parse JSON
+      const content = JSON.parse(atob(data.content));
+
+      return {
+        sha: data.sha,
+        content: content,
+      };
+    }
+  } catch (error) {
+    console.error(error);
+    return null; // Handle the error as needed in your application
+  }
+}
+
+async function updateDataJSON(createFileObj, sha, alreadyContent) {
+  const url = `https://api.github.com/repos/${createFileObj.username}/AlgoPrep/contents/data.json`;
+
+  let tempQuestionName = createFileObj.question.titleSlug;
+
+  alreadyContent[tempQuestionName] = {
+    date: new Date().toDateString(),
+    questiontitle: createFileObj.question.titleSlug,
+    code: createFileObj.solutionCode,
+    question: createFileObj.question.content,
+    platform: "leetcode",
+    difficulty: createFileObj.question.difficulty,
+    tags: createFileObj.tagArray,
+    qlink: `https://leetcode.com/problems/${createFileObj.question.titleSlug}`,
+    githublink: `https://github.com/${createFileObj.username}/AlgoPrep/tree/main/${createFileObj.question.titleSlug}`,
+  };
+
+  const encodedContent = btoa(JSON.stringify(alreadyContent));
+
+  const body = {
+    message: `updated json file`,
+    content: encodedContent,
+    branch: "main",
+    committer: {
+      name: createFileObj.username ?? "codewithunknown",
+      email: createFileObj.email ?? "notimportantupdatesonly@gmail.com",
+    },
+    sha: sha, // Pass the sha correctly for updating
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${createFileObj.token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      console.log(response);
+      throw new Error(
+        `Failed to update: ${response.status} ${response.statusText}`
+      );
+    } else {
+      const data = await response.json();
+      console.log(`File updated. New SHA: ${data.content.sha}`);
     }
   } catch (error) {
     console.error(error);
