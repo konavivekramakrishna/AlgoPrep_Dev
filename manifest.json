@@ -17,6 +17,7 @@
       "js": ["scripts/gfg.js", "scripts/auth.js", "scripts/leetcode.js"],
       "matches": [
         "https://www.geeksforgeeks.org/*",
+        "https://practice.geeksforgeeks.org/*",
         "https://github.com/*",
         "https://leetcode.com/*"
       ],

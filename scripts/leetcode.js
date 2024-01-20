@@ -219,6 +219,18 @@ async function createOrUpdateSolutionFile(solutionObj) {
       solutionObj.question.titleSlug,
       solutionObj.lang
     );
+
+    let tempFlag = await getFolderInfo(
+      `https://api.github.com/repos/${solutionObj.username}/AlgoPrep/contents/data.json`
+    );
+
+    if (tempFlag != false) {
+      // // update
+    } else {
+      // create
+
+      await createFile();
+    }
   }
 }
 
@@ -233,8 +245,11 @@ async function getFolderInfo(url, token) {
 
   if (!response.ok) {
     console.log("err ->", response);
+    return false;
   }
-  return await response.json();
+
+  const data = await response.json();
+  return data.sha; // Return the 'sha' property from the JSON response
 }
 
 // leetcode.js:84 <span data-e2e-locator=​"submission-result">​Accepted​</span>​
@@ -280,3 +295,4 @@ async function createFile(createFileObj, content, fileName, type) {
     console.error(error);
   }
 }
+

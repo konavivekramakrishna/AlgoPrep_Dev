@@ -99,3 +99,23 @@ async function setAuthenticatedUserData(authToken) {
     return null;
   }
 }
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.type == "getUserSolution") {
+    chrome.scripting.executeScript({
+      target: { tabId: sender.tab.id },
+      files: ["scripts/extractCode.js"],
+      world: "MAIN",
+    });
+    sendResponse({ status: true });
+  }
+
+  if (request.type == "deleteNode") {
+    chrome.scripting.executeScript({
+      target: { tabId: sender.tab.id },
+      files: ["scripts/nodeDeletion.js"],
+      world: "MAIN",
+    });
+    sendResponse({ status: true });
+  }
+});
